@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type city struct {
@@ -23,6 +25,20 @@ func filterContentType(handler http.Handler) http.Handler {
 			return
 		}
 		handler.ServeHTTP(w, r)
+	})
+}
+
+// Middleware to add server timestamp for response cookies
+func setServerTimeCookie(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler.ServeHTTP(w, r)
+		//Setting cookie to each and every response
+		cookie := http.Cookie{
+			Name:  "Server-Time(UTC)",
+			Value: strconv.FormatInt(time.Now().Unix(), 10),
+		}
+		http.SetCookie(w, &cookie)
+		log.Println("Currently in the set server time middleware")
 	})
 }
 
