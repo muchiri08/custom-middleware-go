@@ -21,7 +21,7 @@ func filterContentType(handler http.Handler) http.Handler {
 		//Filtering requests by MIME type
 		if r.Header.Get("Content-Type") != "application/json" {
 			w.WriteHeader(http.StatusUnsupportedMediaType)
-			w.Write([]byte("415 - Unsupported Media Type. Please send JSON"))
+			w.Write([]byte("415 - Unsupported Media Type. Please send JSON\n"))
 			return
 		}
 		handler.ServeHTTP(w, r)
@@ -66,6 +66,8 @@ func mainLogic(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/city", mainLogic)
+	mainHandler := http.HandlerFunc(mainLogic)
+
+	http.Handle("/city", filterContentType(setServerTimeCookie(mainHandler)))
 	http.ListenAndServe(":8000", nil)
 }
